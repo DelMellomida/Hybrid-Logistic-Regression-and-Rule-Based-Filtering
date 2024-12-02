@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import LogisticRegression
@@ -67,19 +67,28 @@ all_columns = np.concatenate([continuous_columns, categorical_feature_names])
 joblib.dump(scaler, 'scaler_CreditScoring.pkl')
 joblib.dump(ohe, 'encoder_CreditScoring.pkl')
 
-# Step 7: Train the Logistic Regression model
-classifier = LogisticRegression(random_state=0, penalty='l2', C=2.0)  # L2 regularization
+# Step 7: Hyperparameter Tuning with GridSearchCV
+param_grid = {'C': [0.1, 1, 10], 'solver': ['lbfgs', 'liblinear']}
+grid_search = GridSearchCV(LogisticRegression(), param_grid, cv=5)
+grid_search.fit(X_train_transformed, y_train)
+
+# Get the best parameters from grid search
+best_params = grid_search.best_params_
+print("Best Parameters from GridSearchCV:", best_params)
+
+# Step 8: Train the Logistic Regression model with best parameters
+classifier = LogisticRegression(random_state=0, C=best_params['C'], solver=best_params['solver'])
 classifier.fit(X_train_transformed, y_train)
 
-# Step 8: Predict on the test set
+# Step 9: Predict on the test set
 y_pred = classifier.predict(X_test_transformed)
 
-# Step 9: Evaluate model performance
+# Step 10: Evaluate model performance
 print("Accuracy:", accuracy_score(y_test, y_pred))
 print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
 print("\nClassification Report:\n", classification_report(y_test, y_pred))
 
-# Step 10: Save the trained model
+# Step 11: Save the trained model
 joblib.dump(classifier, 'f1_Classifier_CreditScoring.pkl')
 
 # Optional: Load the saved model for future predictions
