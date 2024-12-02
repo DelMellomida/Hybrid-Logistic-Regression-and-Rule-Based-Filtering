@@ -68,7 +68,7 @@ joblib.dump(scaler, 'scaler_CreditScoring.pkl')
 joblib.dump(ohe, 'encoder_CreditScoring.pkl')
 
 # Step 7: Train the Logistic Regression model
-classifier = LogisticRegression(random_state=0)
+classifier = LogisticRegression(random_state=0, penalty='l2', C=2.0)  # L2 regularization
 classifier.fit(X_train_transformed, y_train)
 
 # Step 8: Predict on the test set
